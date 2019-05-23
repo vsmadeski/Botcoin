@@ -3,7 +3,25 @@
     ViewBag.Title = "Home Page";
 }
 
-<h2>Teste</h2>
+<h1>Botcoin</h1>
+
+<div class="row">
+    <div class="col-sm-4">
+        <label>Bitcoin</label>
+        <input checked type="radio" name="selectedCoin" value="BTC" /><br />
+        <label>Bitcoin Cash</label>
+        <input type="radio" name="selectedCoin" value="BCH" /><br />
+        <label>Litecoin</label>
+        <input type="radio" name="selectedCoin" value="LTC" /><br />
+    </div>
+    <div class="col-sm-8" id="prices">
+        <label>Last price: R$&nbsp</label><span id="lastPrice">...</span><br />
+        <label>High price: R$&nbsp</label><span id="highPrice">...</span><br />
+        <label>Low  price: R$&nbsp</label><span id="lowPrice">...</span><br />
+        <label>Buy  price: R$&nbsp</label><span id="buyPrice">...</span><br />
+        <label>Sell price: R$&nbsp</label><span id="sellPrice">...</span><br />
+    </div>
+</div>
 
 <button id="teste">Botão</button>
 
@@ -12,18 +30,44 @@
     
 <script>
 
-    $("#teste").click(function () {
+    var BotcoinOptions = {
+        ActionName: null,
+        SelectedCoin: null        
+    };
+
+    function BotcoinReset() {
+        BotcoinOptions.ActionName = null;
+        BotcoinOptions.SelectedCoin = null;
+    };
+
+    setInterval(function () {
+        var selCoin = $("input[name='selectedCoin']:checked").val();
+        BotcoinReset();
+        BotcoinOptions = {
+            ActionName: "@ActionNames.GetPrices",
+            SelectedCoin: selCoin
+        };
+        var botcoinParams = JSON.stringify(BotcoinOptions);
         $.ajax({
             url: "/api/botcoin",
             method: "GET",
             data: {
-                actionName: "@ActionNames.GetPrices"
+                botcoinParams
             },
-            success: function () {
-
+            success: function (data) {
+                var jsonData = JSON.parse(data);
+                $("#lastPrice").text(jsonData.ticker.last);
+                $("#highPrice").text(jsonData.ticker.high);
+                $("#lowPrice").text(jsonData.ticker.low);
+                $("#buyPrice").text(jsonData.ticker.buy);
+                $("#sellPrice").text(jsonData.ticker.sell);
             }
         });
-    });
+    }, 5000);
+
+    $("input[name='selectedCoin']").change(function () {
+        $("#prices label+span").text("...");
+    })
 
 </script>
 
