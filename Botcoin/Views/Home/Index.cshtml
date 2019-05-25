@@ -1,4 +1,4 @@
-﻿@using Botcoin.Utils
+﻿@using Botcoin.Utils.Static
 @{
     ViewBag.Title = "Home Page";
 }
@@ -6,7 +6,7 @@
 <h1>Botcoin</h1>
 
 <div class="row">
-    <div class="col-sm-4">
+    <div class="col-sm-2">
         <h3>Moeda</h3>
         <label>Bitcoin</label>
         <input checked type="radio" name="selectedCoin" value="BTC" /><br />
@@ -15,17 +15,40 @@
         <label>Litecoin</label>
         <input type="radio" name="selectedCoin" value="LTC" /><br />
     </div>
-    <div class="col-sm-8" id="prices">
+    <div class="col-sm-3" id="prices">
         <h3>Preços</h3>
-        <label>Último: R$&nbsp</label><span id="lastPrice">...</span><br />
-        <label>Maior: R$&nbsp</label><span id="highPrice">...</span><br />
-        <label>Menor: R$&nbsp</label><span id="lowPrice">...</span><br />
-        <label>Compra: R$&nbsp</label><span id="buyPrice">...</span><br />
-        <label>Venda: R$&nbsp</label><span id="sellPrice">...</span><br />
+        <label>Último: R$&nbsp;</label><span id="lastPrice">...</span><br />
+        <label>Maior: R$&nbsp;</label><span id="highPrice">...</span><br />
+        <label>Menor: R$&nbsp;</label><span id="lowPrice">...</span><br />
+        <label>Compra: R$&nbsp;</label><span id="buyPrice">...</span><br />
+        <label>Venda: R$&nbsp;</label><span id="sellPrice">...</span><br />
+    </div>
+    <div class="col-sm-3">
+        <h3>Saldo Total</h3>
+        <label>R$:&nbsp;</label><span id="totalBrl">...</span><br />
+        <label>BTC:&nbsp;</label><span id="totalBtc">...</span><br />
+        <label>BCH:&nbsp;</label><span id="totalBch">...</span><br />
+        <label>LTC:&nbsp;</label><span id="totalLtc">...</span><br />
+    </div>
+    <div class="col-sm-3">
+        <h3>Saldo de operação</h3>
+        <label>R$:&nbsp;</label><span id="opsBrl">...</span><br />
+        <label>BTC:&nbsp;</label><span id="opsBtc">...</span><br />
+        <label>BCH:&nbsp;</label><span id="opsBch">...</span><br />
+        <label>LTC:&nbsp;</label><span id="opsLtc">...</span><br />
     </div>
 </div>
 
 <hr />
+
+<div class="row">
+    <label>Tapi-ID</label>
+    <input type="text" name="tapiId" value="" /><br />
+    <label>Tapi-Key</label>
+    <input type="text" name="tapiKey" value="" /><br />
+    <button id="connectTapi">Conectar</button>
+</div>
+
 
 @section Scripts
 {
@@ -34,12 +57,27 @@
 
     var BotcoinOptions = {
         ActionName: null,
-        SelectedCoin: null        
+        SelectedCoin: null,
+        TapiId: null,
+        TapiKey: null,
+        TapiMethod: null,
+        TotalBalance: {
+            BRL: null,
+            BTC: null,
+            BCH: null,
+            LTC: null
+        },
+        IsConnected: null
     };
 
     function BotcoinReset() {
         BotcoinOptions.ActionName = null;
         BotcoinOptions.SelectedCoin = null;
+        BotcoinOptions.TapiId = null;
+        BotcoinOptions.TapiKey= null;
+        BotcoinOptions.TapiMethod = null;
+        BotcoinOptions.TotalBalance = null;
+        BotcoinOptions.IsConnected= null;
     };
 
     setInterval(function () {
@@ -70,6 +108,56 @@
     $("input[name='selectedCoin']").change(function () {
         $("#prices label+span").text("...");
     })
+
+    $("#connectTapi").click(function () {
+        BotcoinReset();
+        BotcoinOptions = {
+            ActionName: "@ActionNames.ConnectTapi",
+            TapiId: $("input[name='tapiId']").val(),
+            TapiKey: $("input[name='tapiKey']").val(),
+            TapiMethod: "@TapiMethods.GetAccountInfo"
+        };
+        var botcoinParams = JSON.stringify(BotcoinOptions);
+        $.ajax({
+            url: "/api/botcoin",
+            method: "GET",
+            data: {
+                botcoinParams
+            },
+            success: function (data) {
+                console.dir(JSON.parse(data));
+                var jsonData = JSON.parse(data);
+                if (jsonData.status_code === 100) {
+                    $("#totalBrl").text(jsonData.response_data.balance.brl.available);
+                    $("#totalBtc").text(jsonData.response_data.balance.btc.available);
+                    $("#totalBch").text(jsonData.response_data.balance.bch.available);
+                    $("#totalLtc").text(jsonData.response_data.balance.ltc.available);
+
+                    BotcoinReset();
+                    BotcoinOptions = {
+                        ActionName: "@ActionNames.SetConfig",
+                        TapiId: $("input[name='tapiId']").val(),
+                        TapiKey: $("input[name='tapiKey']").val(),
+                        TotalBalance: {
+                            BRL: jsonData.response_data.balance.brl.available,
+                            BTC: jsonData.response_data.balance.btc.available,
+                            BCH: jsonData.response_data.balance.bch.available,
+                            LTC: jsonData.response_data.balance.ltc.available
+                        },
+                        IsConnected: true
+                    };
+                    botcoinParams = JSON.stringify(BotcoinOptions);
+                    $.ajax({
+                        url: "/api/botcoin",
+                        method: "GET",
+                        data: {
+                            botcoinParams
+                        }
+                    });
+                }
+            }
+        });
+    });
 
 </script>
 

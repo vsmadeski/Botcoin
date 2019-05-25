@@ -5,17 +5,11 @@ using System.Web;
 
 namespace Botcoin.Models
 {
-    public class BotcoinOptions
+    public class BotcoinConfig
     {
-        public string ActionName { get; set; }
-
-        public string SelectedCoin { get; set; }
-
         public string TapiId { get; set; }
 
         public string TapiKey { get; set; }
-
-        public string TapiMethod { get; set; }
 
         public bool? IsConnected { get; set; }
 
