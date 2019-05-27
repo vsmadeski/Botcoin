@@ -18,7 +18,8 @@ namespace Botcoin.Controllers.Api
 
         private static BotcoinConfig Botcoin = new BotcoinConfig()
         {
-            TotalBalance = new Balance()
+            TotalBalance = new Balance(),
+            OpsBalance = new Balance()
         };
 
         [HttpGet]
@@ -36,6 +37,19 @@ namespace Botcoin.Controllers.Api
             {
                 var result = await ConnectTapiAsync(options);
                 return Ok(result);
+            }
+            else if (options.ActionName == ActionNames.SetOpsBalance && Botcoin.IsConnected.Value && options.OpsBalance != null
+                && !string.IsNullOrWhiteSpace(options.SelectedCoin))
+            {
+                try
+                {
+                    SetOpsBalance(options);
+                    return Ok();
+                }
+                catch (Exception e)
+                {
+                    return BadRequest(e.Message);       
+                }
             }
             else if (options.ActionName == ActionNames.SetConfig)
             {
@@ -56,6 +70,8 @@ namespace Botcoin.Controllers.Api
                 Botcoin.TapiKey = options.TapiKey;
             if (options.IsConnected.HasValue)
                 Botcoin.IsConnected = options.IsConnected.Value;
+            if (options.IsBalanceSet.HasValue)
+                Botcoin.IsBalanceSet = options.IsBalanceSet.Value;
             if (options.TotalBalance != null)
             {
                 if (options.TotalBalance.BRL.HasValue)
@@ -67,6 +83,34 @@ namespace Botcoin.Controllers.Api
                 if (options.TotalBalance.LTC.HasValue)
                     Botcoin.TotalBalance.LTC = options.TotalBalance.LTC;
             }
+            if (options.OpsBalance != null)
+            {
+                if (options.OpsBalance.BRL.HasValue)
+                    Botcoin.OpsBalance.BRL = options.OpsBalance.BRL;
+                if (options.OpsBalance.BTC.HasValue)
+                    Botcoin.OpsBalance.BTC = options.OpsBalance.BTC;
+                if (options.OpsBalance.BCH.HasValue)
+                    Botcoin.OpsBalance.BCH = options.OpsBalance.BCH;
+                if (options.OpsBalance.LTC.HasValue)
+                    Botcoin.OpsBalance.LTC = options.OpsBalance.LTC;
+            }
+        }
+
+        private void SetOpsBalance(BotcoinOptions options)
+        {
+            if(options.OpsBalance.BRL > Botcoin.TotalBalance.BRL
+                || options.OpsBalance.BTC > Botcoin.TotalBalance.BTC
+                || options.OpsBalance.BCH > Botcoin.TotalBalance.BCH
+                || options.OpsBalance.LTC > Botcoin.TotalBalance.LTC)
+            {
+                throw new Exception("Saldo de operação não pode ser maior do que o saldo total.");
+            }
+
+            Botcoin.OpsBalance.BRL = options.OpsBalance.BRL;
+            Botcoin.OpsBalance.BTC = options.OpsBalance.BTC;
+            Botcoin.OpsBalance.BCH = options.OpsBalance.BCH;
+            Botcoin.OpsBalance.LTC = options.OpsBalance.LTC;
+            Botcoin.SelectedCoin = options.SelectedCoin;
         }
 
         private async Task<string> GetPricesAsync(BotcoinOptions options)

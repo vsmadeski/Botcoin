@@ -12,5 +12,7 @@ namespace Botcoin.Utils.Static
         public const string ConnectTapi = "ConnectTapi";
 
         public const string SetConfig = "SetConfig";
+
+        public const string SetOpsBalance = "SetOpsBalance";
     }
 }

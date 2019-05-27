@@ -20,5 +20,9 @@ namespace Botcoin.Models
         public bool? IsConnected { get; set; }
 
         public Balance TotalBalance { get; set; }
+
+        public Balance OpsBalance { get; set; }
+
+        public bool? IsBalanceSet { get; set; }
     }
 }

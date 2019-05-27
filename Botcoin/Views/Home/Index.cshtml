@@ -32,10 +32,10 @@
     </div>
     <div class="col-sm-3">
         <h3>Saldo de operação</h3>
-        <label>R$:&nbsp;</label><span id="opsBrl">...</span><br />
-        <label>BTC:&nbsp;</label><span id="opsBtc">...</span><br />
-        <label>BCH:&nbsp;</label><span id="opsBch">...</span><br />
-        <label>LTC:&nbsp;</label><span id="opsLtc">...</span><br />
+        <label>R$:&nbsp;</label><input type="number" id="opsBrl" value="0" /><br />
+        <label>BTC:&nbsp;</label><input type="number" id="opsBtc" value="0" /><br />
+        <label>BCH:&nbsp;</label><input type="number" id="opsBch" value="0" /><br />
+        <label>LTC:&nbsp;</label><input type="number" id="opsLtc" value="0" /><br />
     </div>
 </div>
 
@@ -47,6 +47,7 @@
     <label>Tapi-Key</label>
     <input type="text" name="tapiKey" value="" /><br />
     <button id="connectTapi">Conectar</button>
+    <button id="setOpsBalance">Definir saldo de operação</button>
 </div>
 
 
@@ -67,7 +68,14 @@
             BCH: null,
             LTC: null
         },
-        IsConnected: null
+        OpsBalance: {
+            BRL: null,
+            BTC: null,
+            BCH: null,
+            LTC: null
+        },
+        IsConnected: null,
+        IsBalanceSet: null
     };
 
     function BotcoinReset() {
@@ -77,7 +85,9 @@
         BotcoinOptions.TapiKey= null;
         BotcoinOptions.TapiMethod = null;
         BotcoinOptions.TotalBalance = null;
+        BotcoinOptions.OpsBalance = null;
         BotcoinOptions.IsConnected= null;
+        BotcoinOptions.IsBalanceSet= null;
     };
 
     setInterval(function () {
@@ -155,6 +165,48 @@
                         }
                     });
                 }
+            }
+        });
+    });
+
+    $("#setOpsBalance").click(function () {
+        BotcoinReset();
+        BotcoinOptions = {
+            OpsBalance: {
+                BRL: $("#opsBrl").val(),
+                BTC: $("#opsBtc").val(),
+                BCH: $("#opsBch").val(),
+                LTC: $("#opsLtc").val()
+            },
+            ActionName: "@ActionNames.SetOpsBalance",
+            SelectedCoin: $("input[name='selectedCoin']:checked").val()
+        };
+        var botcoinParams = JSON.stringify(BotcoinOptions);
+        $.ajax({
+            url: "/api/botcoin",
+            method: "GET",
+            data: {
+                botcoinParams
+            },
+            success: function () {
+                $("#opsBrl").attr("readonly", true);
+                $("#opsBtc").attr("readonly", true);
+                $("#opsBch").attr("readonly", true);
+                $("#opsLtc").attr("readonly", true);
+
+                BotcoinReset();
+                BotcoinOptions = {
+                    ActionName: "@ActionNames.SetConfig",
+                    IsBalanceSet: true
+                };
+                botcoinParams = JSON.stringify(BotcoinOptions);
+                $.ajax({
+                    url: "/api/botcoin",
+                    method: "GET",
+                    data: {
+                        botcoinParams
+                    }
+                });
             }
         });
     });
