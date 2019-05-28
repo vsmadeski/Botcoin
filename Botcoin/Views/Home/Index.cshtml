@@ -144,28 +144,6 @@
                     $("#totalBtc").text(jsonData.response_data.balance.btc.available);
                     $("#totalBch").text(jsonData.response_data.balance.bch.available);
                     $("#totalLtc").text(jsonData.response_data.balance.ltc.available);
-
-                    BotcoinReset();
-                    BotcoinOptions = {
-                        ActionName: "@ActionNames.SetConfig",
-                        TapiId: $("input[name='tapiId']").val(),
-                        TapiKey: $("input[name='tapiKey']").val(),
-                        TotalBalance: {
-                            BRL: jsonData.response_data.balance.brl.available,
-                            BTC: jsonData.response_data.balance.btc.available,
-                            BCH: jsonData.response_data.balance.bch.available,
-                            LTC: jsonData.response_data.balance.ltc.available
-                        },
-                        IsConnected: true
-                    };
-                    botcoinParams = JSON.stringify(BotcoinOptions);
-                    $.ajax({
-                        url: "/api/botcoin",
-                        method: "GET",
-                        data: {
-                            botcoinParams
-                        }
-                    });
                 }
             }
         });
@@ -195,20 +173,6 @@
                 $("#opsBtc").attr("readonly", true);
                 $("#opsBch").attr("readonly", true);
                 $("#opsLtc").attr("readonly", true);
-
-                BotcoinReset();
-                BotcoinOptions = {
-                    ActionName: "@ActionNames.SetConfig",
-                    IsBalanceSet: true
-                };
-                botcoinParams = JSON.stringify(BotcoinOptions);
-                $.ajax({
-                    url: "/api/botcoin",
-                    method: "GET",
-                    data: {
-                        botcoinParams
-                    }
-                });
             }
         });
     });

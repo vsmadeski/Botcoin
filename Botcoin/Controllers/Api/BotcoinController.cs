@@ -9,6 +9,7 @@ using System.Web.Http;
 using Newtonsoft.Json;
 using Botcoin.Utils.Static;
 using System.Security.Cryptography;
+using Botcoin.Models.Responses;
 
 namespace Botcoin.Controllers.Api
 {
@@ -57,50 +58,11 @@ namespace Botcoin.Controllers.Api
                 ActivateBotcoin(options);
                 return Ok();
             }
-            else if (options.ActionName == ActionNames.SetConfig)
-            {
-                SetConfig(options);
-                return Ok();
-            }
 
             return NotFound();
         }
 
         #region ActionMethods
-
-        private void SetConfig(BotcoinOptions options)
-        {
-            if (!string.IsNullOrWhiteSpace(options.TapiId))
-                Botcoin.TapiId = options.TapiId;
-            if (!string.IsNullOrWhiteSpace(options.TapiKey))
-                Botcoin.TapiKey = options.TapiKey;
-            if (options.IsConnected.HasValue)
-                Botcoin.IsConnected = options.IsConnected.Value;
-            if (options.IsBalanceSet.HasValue)
-                Botcoin.IsBalanceSet = options.IsBalanceSet.Value;
-            if (options.TotalBalance != null)
-            {
-                if (options.TotalBalance.BRL.HasValue)
-                    Botcoin.TotalBalance.BRL = options.TotalBalance.BRL;
-                if (options.TotalBalance.BTC.HasValue)
-                    Botcoin.TotalBalance.BTC = options.TotalBalance.BTC;
-                if (options.TotalBalance.BCH.HasValue)
-                    Botcoin.TotalBalance.BCH = options.TotalBalance.BCH;
-                if (options.TotalBalance.LTC.HasValue)
-                    Botcoin.TotalBalance.LTC = options.TotalBalance.LTC;
-            }
-            if (options.OpsBalance != null)
-            {
-                if (options.OpsBalance.BRL.HasValue)
-                    Botcoin.OpsBalance.BRL = options.OpsBalance.BRL;
-                if (options.OpsBalance.BTC.HasValue)
-                    Botcoin.OpsBalance.BTC = options.OpsBalance.BTC;
-                if (options.OpsBalance.BCH.HasValue)
-                    Botcoin.OpsBalance.BCH = options.OpsBalance.BCH;
-                if (options.OpsBalance.LTC.HasValue)
-                    Botcoin.OpsBalance.LTC = options.OpsBalance.LTC;
-            }
-        }
 
         private void SetOpsBalance(BotcoinOptions options)
         {
@@ -121,6 +83,7 @@ namespace Botcoin.Controllers.Api
             Botcoin.ReservedBalance.BCH = Botcoin.TotalBalance.BCH - Botcoin.OpsBalance.BCH;
             Botcoin.ReservedBalance.LTC = Botcoin.TotalBalance.LTC - Botcoin.OpsBalance.LTC;
             Botcoin.SelectedCoin = options.SelectedCoin;
+            Botcoin.IsBalanceSet = true;
         }
 
         private void ActivateBotcoin(BotcoinOptions options)
@@ -149,10 +112,10 @@ namespace Botcoin.Controllers.Api
                 var uri = new Uri(MBBaseUrl);
 
                 var parameters = new Dictionary<string, string>
-                    {
-                        {"tapi_method", options.TapiMethod },
-                        {"tapi_nonce", DateTime.Now.Ticks.ToString() }
-                    };
+                {
+                    {"tapi_method", options.TapiMethod },
+                    {"tapi_nonce", DateTime.Now.Ticks.ToString() }
+                };
 
                 var content = new FormUrlEncodedContent(parameters);
 
@@ -166,6 +129,20 @@ namespace Botcoin.Controllers.Api
                 var respone = await client.PostAsync(uri, content);
 
                 var result = await respone.Content.ReadAsStringAsync();
+
+                var jsonData = JsonConvert.DeserializeObject<GetAccountInfoResponse>(result);
+
+                if (jsonData.status_code == 100)
+                {
+                    var culture = System.Globalization.CultureInfo.InvariantCulture;
+                    Botcoin.TapiId = options.TapiId;
+                    Botcoin.TapiKey = options.TapiKey;
+                    Botcoin.IsConnected = true;
+                    Botcoin.TotalBalance.BRL = double.Parse(jsonData.response_data.balance.brl.available, culture);
+                    Botcoin.TotalBalance.BTC = double.Parse(jsonData.response_data.balance.btc.available, culture);
+                    Botcoin.TotalBalance.BCH = double.Parse(jsonData.response_data.balance.bch.available, culture);
+                    Botcoin.TotalBalance.LTC = double.Parse(jsonData.response_data.balance.ltc.available, culture);
+                }
 
                 return result;
             }
