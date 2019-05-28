@@ -48,6 +48,7 @@
     <input type="text" name="tapiKey" value="" /><br />
     <button id="connectTapi">Conectar</button>
     <button id="setOpsBalance">Definir saldo de operação</button>
+    <button id="activateBotcoin">Ativar</button>  
 </div>
 
 
@@ -75,7 +76,8 @@
             LTC: null
         },
         IsConnected: null,
-        IsBalanceSet: null
+        IsBalanceSet: null,
+        IsActive: null
     };
 
     function BotcoinReset() {
@@ -88,6 +90,7 @@
         BotcoinOptions.OpsBalance = null;
         BotcoinOptions.IsConnected= null;
         BotcoinOptions.IsBalanceSet= null;
+        BotcoinOptions.IsActive= null;
     };
 
     setInterval(function () {
@@ -135,7 +138,6 @@
                 botcoinParams
             },
             success: function (data) {
-                console.dir(JSON.parse(data));
                 var jsonData = JSON.parse(data);
                 if (jsonData.status_code === 100) {
                     $("#totalBrl").text(jsonData.response_data.balance.brl.available);
@@ -207,6 +209,25 @@
                         botcoinParams
                     }
                 });
+            }
+        });
+    });
+
+    $("#activateBotcoin").click(function () {
+        BotcoinReset();
+        BotcoinOptions = {
+            ActionName: "@ActionNames.Activate",
+            IsActive: true
+        };
+        var botcoinParams = JSON.stringify(BotcoinOptions);
+        $.ajax({
+            url: "/api/botcoin",
+            method: "GET",
+            data: {
+                botcoinParams
+            },
+            success: function () {
+
             }
         });
     });

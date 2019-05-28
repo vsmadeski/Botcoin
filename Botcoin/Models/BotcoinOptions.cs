@@ -24,5 +24,7 @@ namespace Botcoin.Models
         public Balance OpsBalance { get; set; }
 
         public bool? IsBalanceSet { get; set; }
+
+        public bool? IsActive { get; set; }
     }
 }

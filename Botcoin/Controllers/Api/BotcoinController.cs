@@ -19,7 +19,8 @@ namespace Botcoin.Controllers.Api
         private static BotcoinConfig Botcoin = new BotcoinConfig()
         {
             TotalBalance = new Balance(),
-            OpsBalance = new Balance()
+            OpsBalance = new Balance(),
+            ReservedBalance = new Balance()
         };
 
         [HttpGet]
@@ -50,6 +51,11 @@ namespace Botcoin.Controllers.Api
                 {
                     return BadRequest(e.Message);       
                 }
+            }
+            else if (options.ActionName == ActionNames.Activate && Botcoin.IsConnected.Value && Botcoin.IsBalanceSet.Value)
+            {
+                ActivateBotcoin(options);
+                return Ok();
             }
             else if (options.ActionName == ActionNames.SetConfig)
             {
@@ -110,7 +116,16 @@ namespace Botcoin.Controllers.Api
             Botcoin.OpsBalance.BTC = options.OpsBalance.BTC;
             Botcoin.OpsBalance.BCH = options.OpsBalance.BCH;
             Botcoin.OpsBalance.LTC = options.OpsBalance.LTC;
+            Botcoin.ReservedBalance.BRL = Botcoin.TotalBalance.BRL - Botcoin.OpsBalance.BRL;
+            Botcoin.ReservedBalance.BTC = Botcoin.TotalBalance.BTC - Botcoin.OpsBalance.BTC;
+            Botcoin.ReservedBalance.BCH = Botcoin.TotalBalance.BCH - Botcoin.OpsBalance.BCH;
+            Botcoin.ReservedBalance.LTC = Botcoin.TotalBalance.LTC - Botcoin.OpsBalance.LTC;
             Botcoin.SelectedCoin = options.SelectedCoin;
+        }
+
+        private void ActivateBotcoin(BotcoinOptions options)
+        {
+            Botcoin.IsActive = true;
         }
 
         private async Task<string> GetPricesAsync(BotcoinOptions options)
