@@ -18,11 +18,15 @@
 
 /* Set width on the form input elements since they're 100% wide by default */
 input,
-select,
-textarea {
+select {
     max-width: 280px;
 }
 
 #opsBrl[readonly], #opsBtc[readonly], #opsBch[readonly], #opsLtc[readonly] {
     background-color: rgba(119, 119, 119, 0.70);
+}
+
+#textLogs {
+    width: 100%;
+    resize:none;
 }

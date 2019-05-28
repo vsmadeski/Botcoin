@@ -51,6 +51,15 @@
     <button id="activateBotcoin">Ativar</button>  
 </div>
 
+<hr />
+
+<div class="row">
+    <h2>Log</h2>
+    <textarea readonly rows="15" id="textLogs">
+
+    </textarea>
+</div>
+
 
 @section Scripts
 {
@@ -92,6 +101,8 @@
         BotcoinOptions.IsBalanceSet= null;
         BotcoinOptions.IsActive= null;
     };
+
+    $("#textLogs").text("");
 
     setInterval(function () {
         var selCoin = $("input[name='selectedCoin']:checked").val();
@@ -144,6 +155,9 @@
                     $("#totalBtc").text(jsonData.response_data.balance.btc.available);
                     $("#totalBch").text(jsonData.response_data.balance.bch.available);
                     $("#totalLtc").text(jsonData.response_data.balance.ltc.available);
+                    $("#textLogs").text((index, text) => {
+                        return text + "\n********CONECTADO COM SUCESSO!********";
+                    });
                 }
             }
         });
@@ -173,6 +187,9 @@
                 $("#opsBtc").attr("readonly", true);
                 $("#opsBch").attr("readonly", true);
                 $("#opsLtc").attr("readonly", true);
+                $("#textLogs").text((index, text) => {
+                    return text + "\n********SALDO DE OPERAÇÃO DEFINIDO!********";
+                });
             }
         });
     });
@@ -191,7 +208,9 @@
                 botcoinParams
             },
             success: function () {
-
+                $("#textLogs").text((index, text) => {
+                    return text + "\n********BOTCOIN ATIVADO!********";
+                });
             }
         });
     });
