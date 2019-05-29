@@ -21,7 +21,8 @@ namespace Botcoin.Controllers.Api
         {
             TotalBalance = new Balance(),
             OpsBalance = new Balance(),
-            ReservedBalance = new Balance()
+            ReservedBalance = new Balance(),
+            Prices = new Prices()
         };
 
         [HttpGet]
@@ -34,14 +35,12 @@ namespace Botcoin.Controllers.Api
                 var result = await GetPricesAsync(options);
                 return Ok(result);
             }
-            else if (options.ActionName == ActionNames.ConnectTapi && !string.IsNullOrWhiteSpace(options.TapiId)
-                && !string.IsNullOrWhiteSpace(options.TapiKey) && !string.IsNullOrWhiteSpace(options.TapiMethod))
+            else if (options.ActionName == ActionNames.ConnectTapi && !string.IsNullOrWhiteSpace(options.TapiId) && !string.IsNullOrWhiteSpace(options.TapiKey) && !string.IsNullOrWhiteSpace(options.TapiMethod))
             {
                 var result = await ConnectTapiAsync(options);
                 return Ok(result);
             }
-            else if (options.ActionName == ActionNames.SetOpsBalance && Botcoin.IsConnected.Value && options.OpsBalance != null
-                && !string.IsNullOrWhiteSpace(options.SelectedCoin))
+            else if (options.ActionName == ActionNames.SetOpsBalance && Botcoin.IsConnected.Value && options.OpsBalance != null && !string.IsNullOrWhiteSpace(options.SelectedCoin))
             {
                 try
                 {
@@ -100,6 +99,15 @@ namespace Botcoin.Controllers.Api
                 var response = await client.GetAsync(uri);
 
                 var result = await response.Content.ReadAsStringAsync();
+
+                var jsonData = JsonConvert.DeserializeObject<GetPricesResponse>(result);
+
+                Botcoin.Prices.BuyPrice = double.Parse(jsonData.ticker.buy, System.Globalization.CultureInfo.InvariantCulture);
+                Botcoin.Prices.SellPrice = double.Parse(jsonData.ticker.sell, System.Globalization.CultureInfo.InvariantCulture);
+                Botcoin.Prices.HighPrice = double.Parse(jsonData.ticker.high, System.Globalization.CultureInfo.InvariantCulture);
+                Botcoin.Prices.LowPrice = double.Parse(jsonData.ticker.low, System.Globalization.CultureInfo.InvariantCulture);
+                Botcoin.Prices.LastPrice = double.Parse(jsonData.ticker.last, System.Globalization.CultureInfo.InvariantCulture);
+                Botcoin.Prices.RelatedCoin = options.SelectedCoin;
 
                 return result;
             }
