@@ -16,5 +16,7 @@ namespace Botcoin.Utils.Static
         public const string SetOpsBalance = "SetOpsBalance";
 
         public const string Activate = "Activate";
+
+        public const string BotcoinMain = "BotcoinMain";
     }
 }

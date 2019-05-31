@@ -125,6 +125,19 @@
                 $("#lowPrice").text(jsonData.ticker.low);
                 $("#buyPrice").text(jsonData.ticker.buy);
                 $("#sellPrice").text(jsonData.ticker.sell);
+
+                BotcoinReset();
+                BotcoinOptions = {
+                    ActionName: "@ActionNames.BotcoinMain"
+                };
+                botcoinParams = JSON.stringify(BotcoinOptions);
+                $.ajax({
+                    url: "/api/botcoin",
+                    method: "GET",
+                    data: {
+                        botcoinParams
+                    }
+                });
             }
         });
     }, 5000);
