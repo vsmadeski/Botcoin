@@ -57,6 +57,10 @@ namespace Botcoin.Controllers.Api
                 ActivateBotcoin(options);
                 return Ok();
             }
+            else if (options.ActionName == ActionNames.BotcoinMain && Botcoin.IsActive.Value)
+            {
+
+            }
 
             return NotFound();
         }

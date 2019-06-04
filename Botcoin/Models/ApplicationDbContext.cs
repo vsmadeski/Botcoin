@@ -19,5 +19,7 @@ namespace Botcoin.Models
         }
 
         public DbSet<PriceRecord> PriceRecords { get; set; }
+        public DbSet<BuyOrderModel> BuyOrders { get; set; }
+        public DbSet<SellOrderModel> SellOrders { get; set; }
     }
 }
