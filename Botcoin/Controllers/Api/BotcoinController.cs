@@ -66,6 +66,7 @@ namespace Botcoin.Controllers.Api
                 {
                     if(Botcoin.SelectedCoin == "BTC" && Botcoin.OpsBalance.BRL > 0)
                     {
+                        // Valor mínimo para compra de BTC 0.001
                         // Fazer ordem de compra de BTC baseada no preço da última ordem de venda
                         // Registrar dados desta ordem no banco de dados
                         // Atualizar OpsBalance (talvez deixar para atualizar no final do bloco)
@@ -188,6 +189,70 @@ namespace Botcoin.Controllers.Api
                 }
 
                 return result;
+            }
+        }
+
+        private async Task PlaceBuyOrderAsync(double quantity, string coin, double price)
+        {
+            using (var client = new HttpClient())
+            {
+                var uri = new Uri(MBBaseUrl);
+
+                var quantityStr = quantity.ToString().Replace(',', '.');
+
+                var parameters = new Dictionary<string, string>
+                {
+                    {"tapi_method", TapiMethods.PlaceBuyOrder },
+                    {"tapi_nonce", DateTime.Now.Ticks.ToString() },
+                    {"coin_pair", "BRL" + Botcoin.SelectedCoin.ToUpper() },
+                    {"quantity", quantityStr },
+                    {"limit_price", price.ToString() }
+                };
+
+                var content = new FormUrlEncodedContent(parameters);
+
+                var paramsEncoded = await content.ReadAsStringAsync();
+
+                var tapiMac = GenerateTapiMac(Botcoin.TapiKey, paramsEncoded);
+
+                content.Headers.Add("TAPI-ID", Botcoin.TapiId);
+                content.Headers.Add("TAPI-MAC", tapiMac);
+
+                var response = await client.PostAsync(uri, content);
+
+                var result = await response.Content.ReadAsStringAsync();                
+            }
+        }
+
+        private async Task PlaceSellOrderAsync(double quantity, string coin, double price)
+        {
+            using (var client = new HttpClient())
+            {
+                var uri = new Uri(MBBaseUrl);
+
+                var quantityStr = quantity.ToString().Replace(',', '.');
+
+                var parameters = new Dictionary<string, string>
+                {
+                    {"tapi_method", TapiMethods.PlaceSellOrder },
+                    {"tapi_nonce", DateTime.Now.Ticks.ToString() },
+                    {"coin_pair", "BRL" + Botcoin.SelectedCoin.ToUpper() },
+                    {"quantity", quantityStr },
+                    {"limit_price", price.ToString() }
+                };
+
+                var content = new FormUrlEncodedContent(parameters);
+
+                var paramsEncoded = await content.ReadAsStringAsync();
+
+                var tapiMac = GenerateTapiMac(Botcoin.TapiKey, paramsEncoded);
+
+                content.Headers.Add("TAPI-ID", Botcoin.TapiId);
+                content.Headers.Add("TAPI-MAC", tapiMac);
+
+                var response = await client.PostAsync(uri, content);
+
+                var result = await response.Content.ReadAsStringAsync();
             }
         }
 

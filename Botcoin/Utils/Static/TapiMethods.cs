@@ -10,5 +10,9 @@ namespace Botcoin.Utils.Static
         public const string GetAccountInfo = "get_account_info";
 
         public const string ListOrders = "list_orders";
+
+        public const string PlaceBuyOrder = "place_buy_order";
+
+        public const string PlaceSellOrder = "place_sell_order";
     }
 }
