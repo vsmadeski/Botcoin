@@ -136,6 +136,18 @@
                     method: "GET",
                     data: {
                         botcoinParams
+                    },
+                    success: function (data) {
+                        var jsonData = JSON.parse(data);
+                        //console.dir(jsonData);
+                        $("#opsBrl").val(jsonData.OpsBalance.BRL);
+                        $("#opsBtc").val(jsonData.OpsBalance.BTC);
+                        $("#opsBch").val(jsonData.OpsBalance.BCH);
+                        $("#opsLtc").val(jsonData.OpsBalance.LTC);
+                        $("#totalBrl").text(jsonData.TotalBalance.BRL);
+                        $("#totalBtc").text(jsonData.TotalBalance.BTC);
+                        $("#totalBch").text(jsonData.TotalBalance.BCH);
+                        $("#totalLtc").text(jsonData.TotalBalance.LTC);
                     }
                 });
             }

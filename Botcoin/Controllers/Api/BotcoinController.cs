@@ -59,10 +59,33 @@ namespace Botcoin.Controllers.Api
             }
             else if (options.ActionName == ActionNames.BotcoinMain && Botcoin.IsActive.Value)
             {
+                await UpdateTotalAndOpsBalanceAsync();
 
+                var hasOrders = await HasOpenOrdersAsync();
+                if(!hasOrders)
+                {
+                    if(Botcoin.SelectedCoin == "BTC" && Botcoin.OpsBalance.BRL > 0)
+                    {
+                        // Fazer ordem de compra de BTC baseada no preço da última ordem de venda
+                        // Registrar dados desta ordem no banco de dados
+                        // Atualizar OpsBalance (talvez deixar para atualizar no final do bloco)
+                    }
+
+                    if(Botcoin.SelectedCoin == "BTC" && Botcoin.OpsBalance.BTC > 0)
+                    {
+                        // Fazer ordem de venda de BTC baseada no preço da última ordem de compra
+                        // Registrar dados desta ordem no banco de dados
+                        // Atualizar OpsBalance (talvez deixar para atualizar no final do bloco)
+                    }
+
+                    await UpdateTotalAndOpsBalanceAsync();
+                }
+                var jsonData = JsonConvert.SerializeObject(Botcoin);
+
+                return Ok(jsonData);
             }
 
-            return NotFound();
+            return Ok();
         }
 
         #region ActionMethods
@@ -92,6 +115,14 @@ namespace Botcoin.Controllers.Api
         private void ActivateBotcoin(BotcoinOptions options)
         {
             Botcoin.IsActive = true;
+        }
+
+        private void UpdateOpsBalance()
+        {
+            Botcoin.OpsBalance.BRL = Botcoin.TotalBalance.BRL - Botcoin.ReservedBalance.BRL;
+            Botcoin.OpsBalance.BTC = Botcoin.TotalBalance.BTC - Botcoin.ReservedBalance.BTC;
+            Botcoin.OpsBalance.BCH = Botcoin.TotalBalance.BCH - Botcoin.ReservedBalance.BCH;
+            Botcoin.OpsBalance.LTC = Botcoin.TotalBalance.LTC - Botcoin.ReservedBalance.LTC;
         }
 
         private async Task<string> GetPricesAsync(BotcoinOptions options)
@@ -138,9 +169,9 @@ namespace Botcoin.Controllers.Api
                 content.Headers.Add("TAPI-ID", options.TapiId);
                 content.Headers.Add("TAPI-MAC", tapiMac);
 
-                var respone = await client.PostAsync(uri, content);
+                var response = await client.PostAsync(uri, content);
 
-                var result = await respone.Content.ReadAsStringAsync();
+                var result = await response.Content.ReadAsStringAsync();
 
                 var jsonData = JsonConvert.DeserializeObject<GetAccountInfoResponse>(result);
 
@@ -157,6 +188,79 @@ namespace Botcoin.Controllers.Api
                 }
 
                 return result;
+            }
+        }
+
+        private async Task UpdateTotalAndOpsBalanceAsync()
+        {
+            using (var client = new HttpClient())
+            {
+                var uri = new Uri(MBBaseUrl);
+
+                var parameters = new Dictionary<string, string>
+                {
+                    {"tapi_method", TapiMethods.GetAccountInfo },
+                    {"tapi_nonce", DateTime.Now.Ticks.ToString() }
+                };
+
+                var content = new FormUrlEncodedContent(parameters);
+
+                var paramsEncoded = await content.ReadAsStringAsync();
+
+                var tapiMac = GenerateTapiMac(Botcoin.TapiKey, paramsEncoded);
+
+                content.Headers.Add("TAPI-ID", Botcoin.TapiId);
+                content.Headers.Add("TAPI-MAC", tapiMac);
+
+                var response = await client.PostAsync(uri, content);
+
+                var result = await response.Content.ReadAsStringAsync();
+
+                var jsonData = JsonConvert.DeserializeObject<GetAccountInfoResponse>(result);
+
+                if (jsonData.status_code == 100)
+                {
+                    var culture = System.Globalization.CultureInfo.InvariantCulture;
+                    Botcoin.TotalBalance.BRL = double.Parse(jsonData.response_data.balance.brl.available, culture);
+                    Botcoin.TotalBalance.BTC = double.Parse(jsonData.response_data.balance.btc.available, culture);
+                    Botcoin.TotalBalance.BCH = double.Parse(jsonData.response_data.balance.bch.available, culture);
+                    Botcoin.TotalBalance.LTC = double.Parse(jsonData.response_data.balance.ltc.available, culture);
+
+                    UpdateOpsBalance();
+                }
+            }
+        }
+
+        private async Task<bool> HasOpenOrdersAsync()
+        {
+            using (var client = new HttpClient())
+            {
+                var uri = new Uri(MBBaseUrl);
+
+                var parameters = new Dictionary<string, string>
+                {
+                    {"tapi_method", TapiMethods.ListOrders },
+                    {"tapi_nonce", DateTime.Now.Ticks.ToString() },
+                    {"coin_pair", "BRL" + Botcoin.SelectedCoin.ToUpper() },
+                    {"status_list", "[2]" }
+                };
+
+                var content = new FormUrlEncodedContent(parameters);
+
+                var paramsEncoded = await content.ReadAsStringAsync();
+
+                var tapiMac = GenerateTapiMac(Botcoin.TapiKey, paramsEncoded);
+
+                content.Headers.Add("TAPI-ID", Botcoin.TapiId);
+                content.Headers.Add("TAPI-MAC", tapiMac);
+
+                var response = await client.PostAsync(uri, content);
+
+                var result = await response.Content.ReadAsStringAsync();
+
+                var jsonData = JsonConvert.DeserializeObject<ListOrdersResponse>(result);
+
+                return jsonData.response_data.orders.Length > 0;
             }
         }
 

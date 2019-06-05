@@ -8,5 +8,7 @@ namespace Botcoin.Utils.Static
     public static class TapiMethods
     {
         public const string GetAccountInfo = "get_account_info";
+
+        public const string ListOrders = "list_orders";
     }
 }
