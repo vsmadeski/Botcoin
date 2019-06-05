@@ -17,6 +17,8 @@ namespace Botcoin.Controllers.Api
     {
         private const string MBBaseUrl = @"https://www.mercadobitcoin.net/tapi/v3/";
 
+        private static readonly ApplicationDbContext _db = new ApplicationDbContext();
+
         private static BotcoinConfig Botcoin = new BotcoinConfig()
         {
             TotalBalance = new Balance(),
@@ -124,6 +126,34 @@ namespace Botcoin.Controllers.Api
             Botcoin.OpsBalance.BTC = Botcoin.TotalBalance.BTC - Botcoin.ReservedBalance.BTC;
             Botcoin.OpsBalance.BCH = Botcoin.TotalBalance.BCH - Botcoin.ReservedBalance.BCH;
             Botcoin.OpsBalance.LTC = Botcoin.TotalBalance.LTC - Botcoin.ReservedBalance.LTC;
+        }
+
+        private async Task RegisterBuyOrderAsync(double amount, string coin, double price)
+        {
+            var order = new BuyOrderModel()
+            {
+                Amount = amount,
+                Coin = coin,
+                Price = price,
+                DateRegistered = DateTime.Now
+            };
+
+            _db.BuyOrders.Add(order);
+            await _db.SaveChangesAsync();
+        }
+
+        private async Task RegisterSellOrderAsync(double amount, string coin, double price)
+        {
+            var order = new SellOrderModel()
+            {
+                Amount = amount,
+                Coin = coin,
+                Price = price,
+                DateRegistered = DateTime.Now
+            };
+
+            _db.SellOrders.Add(order);
+            await _db.SaveChangesAsync();
         }
 
         private async Task<string> GetPricesAsync(BotcoinOptions options)
