@@ -181,6 +181,8 @@
     <Compile Include="Models\Responses\GetAccountInfoResponse.cs" />
     <Compile Include="Models\Responses\GetAccountInfoResponseData.cs" />
     <Compile Include="Models\Responses\GetPricesResponse.cs" />
+    <Compile Include="Models\Responses\ListOrderbookResponse.cs" />
+    <Compile Include="Models\Responses\ListOrderbookResponseData.cs" />
     <Compile Include="Models\Responses\ListOrdersResponse.cs" />
     <Compile Include="Models\Responses\ListOrdersResponseData.cs" />
     <Compile Include="Models\SellOrderModel.cs" />

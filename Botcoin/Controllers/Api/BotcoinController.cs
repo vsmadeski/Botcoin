@@ -62,19 +62,28 @@ namespace Botcoin.Controllers.Api
             else if (options.ActionName == ActionNames.BotcoinMain && Botcoin.IsActive.Value)
             {
                 await UpdateTotalAndOpsBalanceAsync();
+                //await GetBidsAndAsksAsync();
 
                 var hasOrders = await HasOpenOrdersAsync();
                 if(!hasOrders)
                 {
-                    if(Botcoin.SelectedCoin == "BTC" && Botcoin.OpsBalance.BRL > 0)
+                    if(Botcoin.SelectedCoin == "BTC" && Botcoin.OpsBalance.BRL.Value > 30)
                     {
+                        var lastSellOrder = _db.SellOrders.OrderByDescending(s => s.DateRegistered).FirstOrDefault();
+                        var buyPrice = CalculateBuyPrice(lastSellOrder.Price);
+                        if(buyPrice > 0)
+                        {
+                            double quantity = Botcoin.OpsBalance.BRL.Value / buyPrice;
+                            await PlaceBuyOrderAsync(quantity, Botcoin.SelectedCoin, buyPrice);
+                            await RegisterBuyOrderAsync(quantity, Botcoin.SelectedCoin, buyPrice);
+                        }
                         // Valor mínimo para compra de BTC 0.001
                         // Fazer ordem de compra de BTC baseada no preço da última ordem de venda
                         // Registrar dados desta ordem no banco de dados
                         // Atualizar OpsBalance (talvez deixar para atualizar no final do bloco)
                     }
 
-                    if(Botcoin.SelectedCoin == "BTC" && Botcoin.OpsBalance.BTC > 0)
+                    if(Botcoin.SelectedCoin == "BTC" && Botcoin.OpsBalance.BTC.Value > 0.001)
                     {
                         // Fazer ordem de venda de BTC baseada no preço da última ordem de compra
                         // Registrar dados desta ordem no banco de dados
@@ -126,6 +135,24 @@ namespace Botcoin.Controllers.Api
             Botcoin.OpsBalance.BTC = Botcoin.TotalBalance.BTC - Botcoin.ReservedBalance.BTC;
             Botcoin.OpsBalance.BCH = Botcoin.TotalBalance.BCH - Botcoin.ReservedBalance.BCH;
             Botcoin.OpsBalance.LTC = Botcoin.TotalBalance.LTC - Botcoin.ReservedBalance.LTC;
+        }
+
+        private double CalculateBuyPrice(double lastSellPrice)
+        {
+            double calculated = Botcoin.Prices.LastPrice.Value;
+
+            if (calculated <= (lastSellPrice * 0.99))
+                return calculated;
+
+            while(calculated > (lastSellPrice * 0.99))
+            {
+                calculated *= 0.9999;
+            }
+
+            if (calculated > Botcoin.Prices.LowPrice.Value && calculated >= (Botcoin.Prices.LastPrice.Value * 0.95))
+                return calculated;
+
+            return -1;
         }
 
         private async Task RegisterBuyOrderAsync(double amount, string coin, double price)
@@ -228,7 +255,8 @@ namespace Botcoin.Controllers.Api
             {
                 var uri = new Uri(MBBaseUrl);
 
-                var quantityStr = quantity.ToString().Replace(',', '.');
+                var quantityStr = String.Format("{0:0.########}", quantity).Replace(',', '.');
+                var priceStr = String.Format("{0:0.#####}", price).Replace(',', '.');
 
                 var parameters = new Dictionary<string, string>
                 {
@@ -236,7 +264,7 @@ namespace Botcoin.Controllers.Api
                     {"tapi_nonce", DateTime.Now.Ticks.ToString() },
                     {"coin_pair", "BRL" + Botcoin.SelectedCoin.ToUpper() },
                     {"quantity", quantityStr },
-                    {"limit_price", price.ToString() }
+                    {"limit_price", priceStr }
                 };
 
                 var content = new FormUrlEncodedContent(parameters);
@@ -283,6 +311,36 @@ namespace Botcoin.Controllers.Api
                 var response = await client.PostAsync(uri, content);
 
                 var result = await response.Content.ReadAsStringAsync();
+            }
+        }
+
+        private async Task GetBidsAndAsksAsync()
+        {
+            using (var client = new HttpClient())
+            {
+                var uri = new Uri(MBBaseUrl);
+
+                var parameters = new Dictionary<string, string>
+                {
+                    {"tapi_method", TapiMethods.ListOrderbook },
+                    {"tapi_nonce", DateTime.Now.Ticks.ToString() },
+                    {"coin_pair", "BRL" + Botcoin.SelectedCoin.ToUpper() },
+                };
+
+                var content = new FormUrlEncodedContent(parameters);
+
+                var paramsEncoded = await content.ReadAsStringAsync();
+
+                var tapiMac = GenerateTapiMac(Botcoin.TapiKey, paramsEncoded);
+
+                content.Headers.Add("TAPI-ID", Botcoin.TapiId);
+                content.Headers.Add("TAPI-MAC", tapiMac);
+
+                var response = await client.PostAsync(uri, content);
+
+                var result = await response.Content.ReadAsStringAsync();
+
+                var jsonData = JsonConvert.DeserializeObject<ListOrderbookResponse>(result);
             }
         }
 

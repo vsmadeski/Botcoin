@@ -14,5 +14,7 @@ namespace Botcoin.Utils.Static
         public const string PlaceBuyOrder = "place_buy_order";
 
         public const string PlaceSellOrder = "place_sell_order";
+
+        public const string ListOrderbook = "list_orderbook";
     }
 }
