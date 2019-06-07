@@ -85,6 +85,14 @@ namespace Botcoin.Controllers.Api
 
                     if(Botcoin.SelectedCoin == "BTC" && Botcoin.OpsBalance.BTC.Value > 0.001M)
                     {
+                        var lastBuyOrder = _db.BuyOrders.OrderByDescending(b => b.DateRegistered).FirstOrDefault();
+                        var sellPrice = CalculateSellPrice(lastBuyOrder.Price);
+                        if(sellPrice > 0)
+                        {
+                            decimal quantity = Botcoin.OpsBalance.BTC.Value;
+                            await PlaceSellOrderAsync(quantity, Botcoin.SelectedCoin, sellPrice);
+                            await RegisterSellOrderAsync(quantity, Botcoin.SelectedCoin, sellPrice);
+                        }
                         // Fazer ordem de venda de BTC baseada no preço da última ordem de compra
                         // Registrar dados desta ordem no banco de dados
                         // Atualizar OpsBalance (talvez deixar para atualizar no final do bloco)
@@ -140,16 +148,38 @@ namespace Botcoin.Controllers.Api
         private decimal CalculateBuyPrice(decimal lastSellPrice)
         {
             decimal calculated = Botcoin.Prices.SellPrice.Value;
+            calculated = decimal.Round(calculated);
 
             if (calculated <= (lastSellPrice * 0.99M))
                 return calculated;
 
-            while (calculated > (lastSellPrice * 0.99M))
-            {
-                calculated *= 0.9999M;
-            }
+            calculated = (lastSellPrice * 0.99M) - 1M;
+            //while (calculated > (lastSellPrice * 0.99M))
+            //{
+            //    calculated -= 1M;
+            //}
 
             if (calculated > Botcoin.Prices.LowPrice.Value && calculated >= (Botcoin.Prices.LastPrice.Value * 0.95M))
+                return calculated;
+
+            return -1;
+        }
+
+        private decimal CalculateSellPrice(decimal lastBuyPrice)
+        {
+            decimal calculated = Botcoin.Prices.BuyPrice.Value;
+            calculated = decimal.Round(calculated);
+
+            if (calculated >= (lastBuyPrice * 1.01M))
+                return calculated;
+
+            calculated = (lastBuyPrice * 1.01M) + 1M;
+            //while (calculated > (lastSellPrice * 0.99M))
+            //{
+            //    calculated -= 1M;
+            //}
+
+            if (calculated < Botcoin.Prices.HighPrice.Value && calculated <= (Botcoin.Prices.LastPrice.Value * 1.05M))
                 return calculated;
 
             return -1;
@@ -288,7 +318,8 @@ namespace Botcoin.Controllers.Api
             {
                 var uri = new Uri(MBBaseUrl);
 
-                var quantityStr = quantity.ToString().Replace(',', '.');
+                var quantityStr = String.Format("{0:0.########}", quantity).Replace(',', '.');
+                var priceStr = String.Format("{0:0.#####}", price).Replace(',', '.');
 
                 var parameters = new Dictionary<string, string>
                 {
@@ -296,7 +327,7 @@ namespace Botcoin.Controllers.Api
                     {"tapi_nonce", DateTime.Now.Ticks.ToString() },
                     {"coin_pair", "BRL" + Botcoin.SelectedCoin.ToUpper() },
                     {"quantity", quantityStr },
-                    {"limit_price", price.ToString() }
+                    {"limit_price", priceStr }
                 };
 
                 var content = new FormUrlEncodedContent(parameters);
