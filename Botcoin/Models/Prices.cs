@@ -9,14 +9,14 @@ namespace Botcoin.Models
     {
         public string RelatedCoin { get; set; }
 
-        public double? LastPrice { get; set; }
+        public decimal? LastPrice { get; set; }
 
-        public double? HighPrice { get; set; }
+        public decimal? HighPrice { get; set; }
 
-        public double? LowPrice { get; set; }
+        public decimal? LowPrice { get; set; }
 
-        public double? BuyPrice { get; set; }
+        public decimal? BuyPrice { get; set; }
 
-        public double? SellPrice { get; set; }
+        public decimal? SellPrice { get; set; }
     }
 }

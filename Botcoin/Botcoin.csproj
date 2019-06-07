@@ -168,6 +168,10 @@
     <Compile Include="Migrations\201906040117064_AddSellOrdersToDatabase.Designer.cs">
       <DependentUpon>201906040117064_AddSellOrdersToDatabase.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201906070022582_UpdateDoublesToDecimal.cs" />
+    <Compile Include="Migrations\201906070022582_UpdateDoublesToDecimal.Designer.cs">
+      <DependentUpon>201906070022582_UpdateDoublesToDecimal.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ApplicationDbContext.cs" />
     <Compile Include="Models\Balance.cs" />
@@ -256,6 +260,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201906040117064_AddSellOrdersToDatabase.resx">
       <DependentUpon>201906040117064_AddSellOrdersToDatabase.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906070022582_UpdateDoublesToDecimal.resx">
+      <DependentUpon>201906070022582_UpdateDoublesToDecimal.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

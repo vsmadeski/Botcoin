@@ -22,15 +22,15 @@ namespace Botcoin.Models.Responses
 
         public bool has_fills { get; set; }
 
-        public double quantity { get; set; }
+        public decimal quantity { get; set; }
 
-        public double limit_price { get; set; }
+        public decimal limit_price { get; set; }
 
-        public double executed_quantity { get; set; }
+        public decimal executed_quantity { get; set; }
 
-        public double executed_price_avg { get; set; }
+        public decimal executed_price_avg { get; set; }
 
-        public double fee { get; set; }
+        public decimal fee { get; set; }
 
         public long created_timestamp { get; set; }
 
@@ -43,11 +43,11 @@ namespace Botcoin.Models.Responses
     {
         public long operation_id { get; set; }
 
-        public double quantity { get; set; }
+        public decimal quantity { get; set; }
 
-        public double price { get; set; }
+        public decimal price { get; set; }
 
-        public double fee_rate { get; set; }
+        public decimal fee_rate { get; set; }
 
         public long executed_timestamp { get; set; }
     }

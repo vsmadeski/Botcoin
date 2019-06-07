@@ -7,12 +7,12 @@ namespace Botcoin.Models
 {
     public class Balance
     {
-        public double? BRL { get; set; }
+        public decimal? BRL { get; set; }
 
-        public double? BTC { get; set; }
+        public decimal? BTC { get; set; }
 
-        public double? BCH { get; set; }
+        public decimal? BCH { get; set; }
 
-        public double? LTC { get; set; }
+        public decimal? LTC { get; set; }
     }
 }

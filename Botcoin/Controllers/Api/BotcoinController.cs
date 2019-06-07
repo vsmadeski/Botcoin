@@ -73,7 +73,7 @@ namespace Botcoin.Controllers.Api
                         var buyPrice = CalculateBuyPrice(lastSellOrder.Price);
                         if(buyPrice > 0)
                         {
-                            double quantity = Botcoin.OpsBalance.BRL.Value / buyPrice;
+                            decimal quantity = Botcoin.OpsBalance.BRL.Value / buyPrice;
                             await PlaceBuyOrderAsync(quantity, Botcoin.SelectedCoin, buyPrice);
                             await RegisterBuyOrderAsync(quantity, Botcoin.SelectedCoin, buyPrice);
                         }
@@ -83,7 +83,7 @@ namespace Botcoin.Controllers.Api
                         // Atualizar OpsBalance (talvez deixar para atualizar no final do bloco)
                     }
 
-                    if(Botcoin.SelectedCoin == "BTC" && Botcoin.OpsBalance.BTC.Value > 0.001)
+                    if(Botcoin.SelectedCoin == "BTC" && Botcoin.OpsBalance.BTC.Value > 0.001M)
                     {
                         // Fazer ordem de venda de BTC baseada no preço da última ordem de compra
                         // Registrar dados desta ordem no banco de dados
@@ -137,25 +137,25 @@ namespace Botcoin.Controllers.Api
             Botcoin.OpsBalance.LTC = Botcoin.TotalBalance.LTC - Botcoin.ReservedBalance.LTC;
         }
 
-        private double CalculateBuyPrice(double lastSellPrice)
+        private decimal CalculateBuyPrice(decimal lastSellPrice)
         {
-            double calculated = Botcoin.Prices.LastPrice.Value;
+            decimal calculated = Botcoin.Prices.SellPrice.Value;
 
-            if (calculated <= (lastSellPrice * 0.99))
+            if (calculated <= (lastSellPrice * 0.99M))
                 return calculated;
 
-            while(calculated > (lastSellPrice * 0.99))
+            while (calculated > (lastSellPrice * 0.99M))
             {
-                calculated *= 0.9999;
+                calculated *= 0.9999M;
             }
 
-            if (calculated > Botcoin.Prices.LowPrice.Value && calculated >= (Botcoin.Prices.LastPrice.Value * 0.95))
+            if (calculated > Botcoin.Prices.LowPrice.Value && calculated >= (Botcoin.Prices.LastPrice.Value * 0.95M))
                 return calculated;
 
             return -1;
         }
 
-        private async Task RegisterBuyOrderAsync(double amount, string coin, double price)
+        private async Task RegisterBuyOrderAsync(decimal amount, string coin, decimal price)
         {
             var order = new BuyOrderModel()
             {
@@ -169,7 +169,7 @@ namespace Botcoin.Controllers.Api
             await _db.SaveChangesAsync();
         }
 
-        private async Task RegisterSellOrderAsync(double amount, string coin, double price)
+        private async Task RegisterSellOrderAsync(decimal amount, string coin, decimal price)
         {
             var order = new SellOrderModel()
             {
@@ -195,11 +195,11 @@ namespace Botcoin.Controllers.Api
 
                 var jsonData = JsonConvert.DeserializeObject<GetPricesResponse>(result);
 
-                Botcoin.Prices.BuyPrice = double.Parse(jsonData.ticker.buy, System.Globalization.CultureInfo.InvariantCulture);
-                Botcoin.Prices.SellPrice = double.Parse(jsonData.ticker.sell, System.Globalization.CultureInfo.InvariantCulture);
-                Botcoin.Prices.HighPrice = double.Parse(jsonData.ticker.high, System.Globalization.CultureInfo.InvariantCulture);
-                Botcoin.Prices.LowPrice = double.Parse(jsonData.ticker.low, System.Globalization.CultureInfo.InvariantCulture);
-                Botcoin.Prices.LastPrice = double.Parse(jsonData.ticker.last, System.Globalization.CultureInfo.InvariantCulture);
+                Botcoin.Prices.BuyPrice = decimal.Parse(jsonData.ticker.buy, System.Globalization.CultureInfo.InvariantCulture);
+                Botcoin.Prices.SellPrice = decimal.Parse(jsonData.ticker.sell, System.Globalization.CultureInfo.InvariantCulture);
+                Botcoin.Prices.HighPrice = decimal.Parse(jsonData.ticker.high, System.Globalization.CultureInfo.InvariantCulture);
+                Botcoin.Prices.LowPrice = decimal.Parse(jsonData.ticker.low, System.Globalization.CultureInfo.InvariantCulture);
+                Botcoin.Prices.LastPrice = decimal.Parse(jsonData.ticker.last, System.Globalization.CultureInfo.InvariantCulture);
                 Botcoin.Prices.RelatedCoin = options.SelectedCoin;
 
                 return result;
@@ -239,17 +239,17 @@ namespace Botcoin.Controllers.Api
                     Botcoin.TapiId = options.TapiId;
                     Botcoin.TapiKey = options.TapiKey;
                     Botcoin.IsConnected = true;
-                    Botcoin.TotalBalance.BRL = double.Parse(jsonData.response_data.balance.brl.available, culture);
-                    Botcoin.TotalBalance.BTC = double.Parse(jsonData.response_data.balance.btc.available, culture);
-                    Botcoin.TotalBalance.BCH = double.Parse(jsonData.response_data.balance.bch.available, culture);
-                    Botcoin.TotalBalance.LTC = double.Parse(jsonData.response_data.balance.ltc.available, culture);
+                    Botcoin.TotalBalance.BRL = decimal.Parse(jsonData.response_data.balance.brl.available, culture);
+                    Botcoin.TotalBalance.BTC = decimal.Parse(jsonData.response_data.balance.btc.available, culture);
+                    Botcoin.TotalBalance.BCH = decimal.Parse(jsonData.response_data.balance.bch.available, culture);
+                    Botcoin.TotalBalance.LTC = decimal.Parse(jsonData.response_data.balance.ltc.available, culture);
                 }
 
                 return result;
             }
         }
 
-        private async Task PlaceBuyOrderAsync(double quantity, string coin, double price)
+        private async Task PlaceBuyOrderAsync(decimal quantity, string coin, decimal price)
         {
             using (var client = new HttpClient())
             {
@@ -282,7 +282,7 @@ namespace Botcoin.Controllers.Api
             }
         }
 
-        private async Task PlaceSellOrderAsync(double quantity, string coin, double price)
+        private async Task PlaceSellOrderAsync(decimal quantity, string coin, decimal price)
         {
             using (var client = new HttpClient())
             {
@@ -374,10 +374,10 @@ namespace Botcoin.Controllers.Api
                 if (jsonData.status_code == 100)
                 {
                     var culture = System.Globalization.CultureInfo.InvariantCulture;
-                    Botcoin.TotalBalance.BRL = double.Parse(jsonData.response_data.balance.brl.available, culture);
-                    Botcoin.TotalBalance.BTC = double.Parse(jsonData.response_data.balance.btc.available, culture);
-                    Botcoin.TotalBalance.BCH = double.Parse(jsonData.response_data.balance.bch.available, culture);
-                    Botcoin.TotalBalance.LTC = double.Parse(jsonData.response_data.balance.ltc.available, culture);
+                    Botcoin.TotalBalance.BRL = decimal.Parse(jsonData.response_data.balance.brl.available, culture);
+                    Botcoin.TotalBalance.BTC = decimal.Parse(jsonData.response_data.balance.btc.available, culture);
+                    Botcoin.TotalBalance.BCH = decimal.Parse(jsonData.response_data.balance.bch.available, culture);
+                    Botcoin.TotalBalance.LTC = decimal.Parse(jsonData.response_data.balance.ltc.available, culture);
 
                     UpdateOpsBalance();
                 }
