@@ -147,22 +147,22 @@ namespace Botcoin.Controllers.Api
 
         private decimal CalculateBuyPrice(decimal lastSellPrice)
         {
-            decimal calculated = Botcoin.Prices.SellPrice.Value;
-            calculated = decimal.Round(calculated);
+            //decimal calculated = Botcoin.Prices.SellPrice.Value;
+            //calculated = decimal.Round(calculated);
 
-            if (calculated <= (lastSellPrice * 0.99M))
-                return calculated;
+            //if (calculated <= (lastSellPrice * 0.99M))
+            //    return calculated;
 
-            calculated = (lastSellPrice * 0.99M) - 1M;
-            //while (calculated > (lastSellPrice * 0.99M))
-            //{
-            //    calculated -= 1M;
-            //}
+            //calculated = (lastSellPrice * 0.99M) - 1M;
+            ////while (calculated > (lastSellPrice * 0.99M))
+            ////{
+            ////    calculated -= 1M;
+            ////}
 
-            if (calculated > Botcoin.Prices.LowPrice.Value && calculated >= (Botcoin.Prices.LastPrice.Value * 0.95M))
-                return calculated;
+            //if (calculated > Botcoin.Prices.LowPrice.Value && calculated >= (Botcoin.Prices.LastPrice.Value * 0.95M))
+            //    return calculated;
 
-            return -1;
+            return decimal.Round(Botcoin.Prices.BuyPrice.Value) - 1;
         }
 
         private decimal CalculateSellPrice(decimal lastBuyPrice)
