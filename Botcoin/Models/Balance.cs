@@ -14,5 +14,9 @@ namespace Botcoin.Models
         public decimal? BCH { get; set; }
 
         public decimal? LTC { get; set; }
+
+        public decimal? ETH { get; set; }
+
+        public decimal? XRP { get; set; }
     }
 }

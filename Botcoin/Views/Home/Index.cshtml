@@ -9,11 +9,15 @@
     <div class="col-sm-2">
         <h3>Moeda</h3>
         <label>Bitcoin</label>
-        <input checked type="radio" name="selectedCoin" value="BTC" /><br />
+        <input type="radio" name="selectedCoin" value="BTC" /><br />
         <label>Bitcoin Cash</label>
         <input type="radio" name="selectedCoin" value="BCH" /><br />
         <label>Litecoin</label>
         <input type="radio" name="selectedCoin" value="LTC" /><br />
+        <label>Ethereum</label>
+        <input type="radio" name="selectedCoin" value="ETH" /><br />
+        <label>Ripple</label>
+        <input checked type="radio" name="selectedCoin" value="XRP" /><br />
     </div>
     <div class="col-sm-3" id="prices">
         <h3>Preços</h3>
@@ -29,6 +33,8 @@
         <label>BTC:&nbsp;</label><span id="totalBtc">...</span><br />
         <label>BCH:&nbsp;</label><span id="totalBch">...</span><br />
         <label>LTC:&nbsp;</label><span id="totalLtc">...</span><br />
+        <label>ETH:&nbsp;</label><span id="totalEth">...</span><br />
+        <label>XRP:&nbsp;</label><span id="totalXrp">...</span><br />
     </div>
     <div class="col-sm-3">
         <h3>Saldo de operação</h3>
@@ -36,6 +42,8 @@
         <label>BTC:&nbsp;</label><input type="number" id="opsBtc" value="0" /><br />
         <label>BCH:&nbsp;</label><input type="number" id="opsBch" value="0" /><br />
         <label>LTC:&nbsp;</label><input type="number" id="opsLtc" value="0" /><br />
+        <label>ETH:&nbsp;</label><input type="number" id="opsEth" value="0" /><br />
+        <label>XRP:&nbsp;</label><input type="number" id="opsXrp" value="0" /><br />
     </div>
 </div>
 
@@ -76,13 +84,17 @@
             BRL: null,
             BTC: null,
             BCH: null,
-            LTC: null
+            LTC: null,
+            ETH: null,
+            XRP: null
         },
         OpsBalance: {
             BRL: null,
             BTC: null,
             BCH: null,
-            LTC: null
+            LTC: null,
+            ETH: null,
+            XRP: null
         },
         IsConnected: null,
         IsBalanceSet: null,
@@ -144,10 +156,14 @@
                         $("#opsBtc").val(jsonData.OpsBalance.BTC);
                         $("#opsBch").val(jsonData.OpsBalance.BCH);
                         $("#opsLtc").val(jsonData.OpsBalance.LTC);
+                        $("#opsEth").val(jsonData.OpsBalance.ETH);
+                        $("#opsXrp").val(jsonData.OpsBalance.XRP);
                         $("#totalBrl").text(jsonData.TotalBalance.BRL);
                         $("#totalBtc").text(jsonData.TotalBalance.BTC);
                         $("#totalBch").text(jsonData.TotalBalance.BCH);
                         $("#totalLtc").text(jsonData.TotalBalance.LTC);
+                        $("#totalEth").text(jsonData.TotalBalance.ETH);
+                        $("#totalXrp").text(jsonData.TotalBalance.XRP);
                     }
                 });
             }
@@ -180,6 +196,8 @@
                     $("#totalBtc").text(jsonData.response_data.balance.btc.available);
                     $("#totalBch").text(jsonData.response_data.balance.bch.available);
                     $("#totalLtc").text(jsonData.response_data.balance.ltc.available);
+                    $("#totalEth").text(jsonData.response_data.balance.eth.available);
+                    $("#totalXrp").text(jsonData.response_data.balance.xrp.available);
                     $("#textLogs").text((index, text) => {
                         return text + "\n********CONECTADO COM SUCESSO!********";
                     });
@@ -195,7 +213,9 @@
                 BRL: $("#opsBrl").val(),
                 BTC: $("#opsBtc").val(),
                 BCH: $("#opsBch").val(),
-                LTC: $("#opsLtc").val()
+                LTC: $("#opsLtc").val(),
+                ETH: $("#opsEth").val(),
+                XRP: $("#opsXrp").val()
             },
             ActionName: "@ActionNames.SetOpsBalance",
             SelectedCoin: $("input[name='selectedCoin']:checked").val()
@@ -212,6 +232,8 @@
                 $("#opsBtc").attr("readonly", true);
                 $("#opsBch").attr("readonly", true);
                 $("#opsLtc").attr("readonly", true);
+                $("#opsEth").attr("readonly", true);
+                $("#opsXrp").attr("readonly", true);
                 $("#textLogs").text((index, text) => {
                     return text + "\n********SALDO DE OPERAÇÃO DEFINIDO!********";
                 });

@@ -18,6 +18,22 @@ namespace Botcoin.Models
             return new ApplicationDbContext();
         }
 
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<BuyOrderModel>()
+                        .Property(p => p.Amount)
+                        .HasPrecision(18, 10);
+            modelBuilder.Entity<BuyOrderModel>()
+                        .Property(p => p.Price)
+                        .HasPrecision(18, 10);
+            modelBuilder.Entity<SellOrderModel>()
+                        .Property(p => p.Amount)
+                        .HasPrecision(18, 10);
+            modelBuilder.Entity<SellOrderModel>()
+                        .Property(p => p.Price)
+                        .HasPrecision(18, 10);
+        }
+
         public DbSet<PriceRecord> PriceRecords { get; set; }
         public DbSet<BuyOrderModel> BuyOrders { get; set; }
         public DbSet<SellOrderModel> SellOrders { get; set; }

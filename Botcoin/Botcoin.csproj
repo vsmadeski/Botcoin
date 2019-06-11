@@ -172,6 +172,10 @@
     <Compile Include="Migrations\201906070022582_UpdateDoublesToDecimal.Designer.cs">
       <DependentUpon>201906070022582_UpdateDoublesToDecimal.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201906100110224_UpdatePricesAndAmountsPrecision.cs" />
+    <Compile Include="Migrations\201906100110224_UpdatePricesAndAmountsPrecision.Designer.cs">
+      <DependentUpon>201906100110224_UpdatePricesAndAmountsPrecision.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ApplicationDbContext.cs" />
     <Compile Include="Models\Balance.cs" />
@@ -263,6 +267,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201906070022582_UpdateDoublesToDecimal.resx">
       <DependentUpon>201906070022582_UpdateDoublesToDecimal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906100110224_UpdatePricesAndAmountsPrecision.resx">
+      <DependentUpon>201906100110224_UpdatePricesAndAmountsPrecision.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

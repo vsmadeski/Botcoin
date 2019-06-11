@@ -67,10 +67,11 @@ namespace Botcoin.Controllers.Api
                 var hasOrders = await HasOpenOrdersAsync();
                 if(!hasOrders)
                 {
-                    if(Botcoin.SelectedCoin == "BTC" && Botcoin.OpsBalance.BRL.Value > 30)
+                    // Mudar o BTC para XRP
+                    if(Botcoin.SelectedCoin == "XRP" && Botcoin.OpsBalance.BRL.Value > 30)
                     {
-                        var lastSellOrder = _db.SellOrders.OrderByDescending(s => s.DateRegistered).FirstOrDefault();
-                        var buyPrice = CalculateBuyPrice(lastSellOrder.Price);
+                        //var lastSellOrder = _db.SellOrders.OrderByDescending(s => s.DateRegistered).FirstOrDefault();
+                        var buyPrice = CalculateBuyPrice();
                         if(buyPrice > 0)
                         {
                             decimal quantity = Botcoin.OpsBalance.BRL.Value / buyPrice;
@@ -83,13 +84,14 @@ namespace Botcoin.Controllers.Api
                         // Atualizar OpsBalance (talvez deixar para atualizar no final do bloco)
                     }
 
-                    if(Botcoin.SelectedCoin == "BTC" && Botcoin.OpsBalance.BTC.Value > 0.001M)
+                    //Mudar o BTC para XRP
+                    if(Botcoin.SelectedCoin == "XRP" && Botcoin.OpsBalance.XRP.Value > 20)
                     {
                         var lastBuyOrder = _db.BuyOrders.OrderByDescending(b => b.DateRegistered).FirstOrDefault();
                         var sellPrice = CalculateSellPrice(lastBuyOrder.Price);
                         if(sellPrice > 0)
                         {
-                            decimal quantity = Botcoin.OpsBalance.BTC.Value;
+                            decimal quantity = Botcoin.OpsBalance.XRP.Value;
                             await PlaceSellOrderAsync(quantity, Botcoin.SelectedCoin, sellPrice);
                             await RegisterSellOrderAsync(quantity, Botcoin.SelectedCoin, sellPrice);
                         }
@@ -115,7 +117,9 @@ namespace Botcoin.Controllers.Api
             if(options.OpsBalance.BRL > Botcoin.TotalBalance.BRL
                 || options.OpsBalance.BTC > Botcoin.TotalBalance.BTC
                 || options.OpsBalance.BCH > Botcoin.TotalBalance.BCH
-                || options.OpsBalance.LTC > Botcoin.TotalBalance.LTC)
+                || options.OpsBalance.LTC > Botcoin.TotalBalance.LTC
+                || options.OpsBalance.ETH > Botcoin.TotalBalance.ETH
+                || options.OpsBalance.XRP > Botcoin.TotalBalance.XRP)
             {
                 throw new Exception("Saldo de operação não pode ser maior do que o saldo total.");
             }
@@ -124,10 +128,14 @@ namespace Botcoin.Controllers.Api
             Botcoin.OpsBalance.BTC = options.OpsBalance.BTC;
             Botcoin.OpsBalance.BCH = options.OpsBalance.BCH;
             Botcoin.OpsBalance.LTC = options.OpsBalance.LTC;
+            Botcoin.OpsBalance.ETH = options.OpsBalance.ETH;
+            Botcoin.OpsBalance.XRP = options.OpsBalance.XRP;
             Botcoin.ReservedBalance.BRL = Botcoin.TotalBalance.BRL - Botcoin.OpsBalance.BRL;
             Botcoin.ReservedBalance.BTC = Botcoin.TotalBalance.BTC - Botcoin.OpsBalance.BTC;
             Botcoin.ReservedBalance.BCH = Botcoin.TotalBalance.BCH - Botcoin.OpsBalance.BCH;
             Botcoin.ReservedBalance.LTC = Botcoin.TotalBalance.LTC - Botcoin.OpsBalance.LTC;
+            Botcoin.ReservedBalance.ETH = Botcoin.TotalBalance.ETH - Botcoin.OpsBalance.ETH;
+            Botcoin.ReservedBalance.XRP = Botcoin.TotalBalance.XRP - Botcoin.OpsBalance.XRP;
             Botcoin.SelectedCoin = options.SelectedCoin;
             Botcoin.IsBalanceSet = true;
         }
@@ -143,9 +151,11 @@ namespace Botcoin.Controllers.Api
             Botcoin.OpsBalance.BTC = Botcoin.TotalBalance.BTC - Botcoin.ReservedBalance.BTC;
             Botcoin.OpsBalance.BCH = Botcoin.TotalBalance.BCH - Botcoin.ReservedBalance.BCH;
             Botcoin.OpsBalance.LTC = Botcoin.TotalBalance.LTC - Botcoin.ReservedBalance.LTC;
+            Botcoin.OpsBalance.ETH = Botcoin.TotalBalance.ETH - Botcoin.ReservedBalance.ETH;
+            Botcoin.OpsBalance.XRP = Botcoin.TotalBalance.XRP - Botcoin.ReservedBalance.XRP;
         }
 
-        private decimal CalculateBuyPrice(decimal lastSellPrice)
+        private decimal CalculateBuyPrice(/*decimal lastSellPrice*/)
         {
             //decimal calculated = Botcoin.Prices.SellPrice.Value;
             //calculated = decimal.Round(calculated);
@@ -162,18 +172,17 @@ namespace Botcoin.Controllers.Api
             //if (calculated > Botcoin.Prices.LowPrice.Value && calculated >= (Botcoin.Prices.LastPrice.Value * 0.95M))
             //    return calculated;
 
-            return decimal.Round(Botcoin.Prices.BuyPrice.Value) - 1;
+            return Botcoin.Prices.BuyPrice.Value - 0.001M;
         }
 
         private decimal CalculateSellPrice(decimal lastBuyPrice)
         {
             decimal calculated = Botcoin.Prices.BuyPrice.Value;
-            calculated = decimal.Round(calculated);
 
             if (calculated >= (lastBuyPrice * 1.01M))
-                return calculated;
+                return calculated + 0.001M;
 
-            calculated = (lastBuyPrice * 1.01M) + 1M;
+            calculated = (lastBuyPrice * 1.01M) + 0.001M;
             //while (calculated > (lastSellPrice * 0.99M))
             //{
             //    calculated -= 1M;
@@ -273,6 +282,8 @@ namespace Botcoin.Controllers.Api
                     Botcoin.TotalBalance.BTC = decimal.Parse(jsonData.response_data.balance.btc.available, culture);
                     Botcoin.TotalBalance.BCH = decimal.Parse(jsonData.response_data.balance.bch.available, culture);
                     Botcoin.TotalBalance.LTC = decimal.Parse(jsonData.response_data.balance.ltc.available, culture);
+                    Botcoin.TotalBalance.ETH = decimal.Parse(jsonData.response_data.balance.eth.available, culture);
+                    Botcoin.TotalBalance.XRP = decimal.Parse(jsonData.response_data.balance.xrp.available, culture);
                 }
 
                 return result;
@@ -409,6 +420,8 @@ namespace Botcoin.Controllers.Api
                     Botcoin.TotalBalance.BTC = decimal.Parse(jsonData.response_data.balance.btc.available, culture);
                     Botcoin.TotalBalance.BCH = decimal.Parse(jsonData.response_data.balance.bch.available, culture);
                     Botcoin.TotalBalance.LTC = decimal.Parse(jsonData.response_data.balance.ltc.available, culture);
+                    Botcoin.TotalBalance.ETH = decimal.Parse(jsonData.response_data.balance.eth.available, culture);
+                    Botcoin.TotalBalance.XRP = decimal.Parse(jsonData.response_data.balance.xrp.available, culture);
 
                     UpdateOpsBalance();
                 }
