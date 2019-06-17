@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Botcoin.Utils.Static;
 using System.Security.Cryptography;
 using Botcoin.Models.Responses;
+using Botcoin.Utils;
 
 namespace Botcoin.Controllers.Api
 {
@@ -64,8 +65,8 @@ namespace Botcoin.Controllers.Api
                 await UpdateTotalAndOpsBalanceAsync();
                 //await GetBidsAndAsksAsync();
 
-                var hasOrders = await HasOpenOrdersAsync();
-                if(!hasOrders)
+                var lastOrder = await GetLatestOrderAsync();
+                if(lastOrder.response_data.orders.Length < 1)
                 {
                     // Mudar o BTC para XRP
                     if(Botcoin.SelectedCoin == "XRP" && Botcoin.OpsBalance.BRL.Value > 30)
@@ -101,6 +102,22 @@ namespace Botcoin.Controllers.Api
                     }
 
                     await UpdateTotalAndOpsBalanceAsync();
+                }
+                else if (lastOrder.response_data.orders.Length == 1)
+                {
+                    //long ticks = lastOrder.response_data.orders[0].created_timestamp;
+                    //var date = CustomConversions.UnixTimeStampToDateTime(ticks);
+                    //var timePassed = DateTime.Now - date;
+                    if(lastOrder.response_data.orders[0].order_type == 1) // ordem de compra
+                    {
+                        var date = CustomConversions.UnixTimeStampToDateTime(lastOrder.response_data.orders[0].created_timestamp);
+                        var timePassed = DateTime.Now - date;
+                        if(timePassed.TotalMinutes >= 5)
+                        {
+                            // cancelar ordem
+                            await CancelOrderAsync(lastOrder.response_data.orders[0].order_id);
+                        }
+                    }
                 }
                 var jsonData = JsonConvert.SerializeObject(Botcoin);
 
@@ -172,26 +189,26 @@ namespace Botcoin.Controllers.Api
             //if (calculated > Botcoin.Prices.LowPrice.Value && calculated >= (Botcoin.Prices.LastPrice.Value * 0.95M))
             //    return calculated;
 
-            return Botcoin.Prices.BuyPrice.Value - 0.001M;
+            return Botcoin.Prices.BuyPrice.Value - 0.01M;
         }
 
         private decimal CalculateSellPrice(decimal lastBuyPrice)
         {
             decimal calculated = Botcoin.Prices.BuyPrice.Value;
 
-            if (calculated >= (lastBuyPrice * 1.01M))
+            if (calculated >= (lastBuyPrice * 1.007M))
                 return calculated + 0.001M;
 
-            calculated = (lastBuyPrice * 1.01M) + 0.001M;
+            calculated = (lastBuyPrice * 1.007M) + 0.0001M;
             //while (calculated > (lastSellPrice * 0.99M))
             //{
             //    calculated -= 1M;
             //}
 
-            if (calculated < Botcoin.Prices.HighPrice.Value && calculated <= (Botcoin.Prices.LastPrice.Value * 1.05M))
-                return calculated;
+            //if (calculated < Botcoin.Prices.HighPrice.Value && calculated <= (Botcoin.Prices.LastPrice.Value * 1.05M))
+            return calculated;
 
-            return -1;
+            //return -1;
         }
 
         private async Task RegisterBuyOrderAsync(decimal amount, string coin, decimal price)
@@ -356,6 +373,35 @@ namespace Botcoin.Controllers.Api
             }
         }
 
+        private async Task CancelOrderAsync(long id)
+        {
+            using (var client = new HttpClient())
+            {
+                var uri = new Uri(MBBaseUrl);
+
+                var parameters = new Dictionary<string, string>
+                {
+                    {"tapi_method", TapiMethods.CancelOrder },
+                    {"tapi_nonce", DateTime.Now.Ticks.ToString() },
+                    {"coin_pair", "BRL" + Botcoin.SelectedCoin.ToUpper() },
+                    {"order_id", id.ToString() }
+                };
+
+                var content = new FormUrlEncodedContent(parameters);
+
+                var paramsEncoded = await content.ReadAsStringAsync();
+
+                var tapiMac = GenerateTapiMac(Botcoin.TapiKey, paramsEncoded);
+
+                content.Headers.Add("TAPI-ID", Botcoin.TapiId);
+                content.Headers.Add("TAPI-MAC", tapiMac);
+
+                var response = await client.PostAsync(uri, content);
+
+                var result = await response.Content.ReadAsStringAsync();
+            }
+        }
+
         private async Task GetBidsAndAsksAsync()
         {
             using (var client = new HttpClient())
@@ -458,6 +504,39 @@ namespace Botcoin.Controllers.Api
                 var jsonData = JsonConvert.DeserializeObject<ListOrdersResponse>(result);
 
                 return jsonData.response_data.orders.Length > 0;
+            }
+        }
+
+        private async Task<ListOrdersResponse> GetLatestOrderAsync()
+        {
+            using (var client = new HttpClient())
+            {
+                var uri = new Uri(MBBaseUrl);
+
+                var parameters = new Dictionary<string, string>
+                {
+                    {"tapi_method", TapiMethods.ListOrders },
+                    {"tapi_nonce", DateTime.Now.Ticks.ToString() },
+                    {"coin_pair", "BRL" + Botcoin.SelectedCoin.ToUpper() },
+                    {"status_list", "[2]" }
+                };
+
+                var content = new FormUrlEncodedContent(parameters);
+
+                var paramsEncoded = await content.ReadAsStringAsync();
+
+                var tapiMac = GenerateTapiMac(Botcoin.TapiKey, paramsEncoded);
+
+                content.Headers.Add("TAPI-ID", Botcoin.TapiId);
+                content.Headers.Add("TAPI-MAC", tapiMac);
+
+                var response = await client.PostAsync(uri, content);
+
+                var result = await response.Content.ReadAsStringAsync();
+
+                var jsonData = JsonConvert.DeserializeObject<ListOrdersResponse>(result);
+
+                return jsonData;
             }
         }
 
