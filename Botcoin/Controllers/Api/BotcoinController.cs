@@ -189,17 +189,17 @@ namespace Botcoin.Controllers.Api
             //if (calculated > Botcoin.Prices.LowPrice.Value && calculated >= (Botcoin.Prices.LastPrice.Value * 0.95M))
             //    return calculated;
 
-            return Botcoin.Prices.BuyPrice.Value - 0.01M;
+            return Botcoin.Prices.BuyPrice.Value - 0.015M;
         }
 
         private decimal CalculateSellPrice(decimal lastBuyPrice)
         {
             decimal calculated = Botcoin.Prices.BuyPrice.Value;
 
-            if (calculated >= (lastBuyPrice * 1.007M))
-                return calculated + 0.001M;
+            if (calculated >= (lastBuyPrice * 1.015M))
+                return calculated + 0.0001M;
 
-            calculated = (lastBuyPrice * 1.007M) + 0.0001M;
+            calculated = (lastBuyPrice * 1.015M) + 0.0001M;
             //while (calculated > (lastSellPrice * 0.99M))
             //{
             //    calculated -= 1M;
