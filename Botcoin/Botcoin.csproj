@@ -176,6 +176,10 @@
     <Compile Include="Migrations\201906100110224_UpdatePricesAndAmountsPrecision.Designer.cs">
       <DependentUpon>201906100110224_UpdatePricesAndAmountsPrecision.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907090050086_UpdatePriceRecordPrecision.cs" />
+    <Compile Include="Migrations\201907090050086_UpdatePriceRecordPrecision.Designer.cs">
+      <DependentUpon>201907090050086_UpdatePriceRecordPrecision.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ApplicationDbContext.cs" />
     <Compile Include="Models\Balance.cs" />
@@ -271,6 +275,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201906100110224_UpdatePricesAndAmountsPrecision.resx">
       <DependentUpon>201906100110224_UpdatePricesAndAmountsPrecision.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907090050086_UpdatePriceRecordPrecision.resx">
+      <DependentUpon>201907090050086_UpdatePriceRecordPrecision.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
