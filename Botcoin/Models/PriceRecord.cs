@@ -10,10 +10,6 @@ namespace Botcoin.Models
     {
         public int Id { get; set; }
 
-        [Required]
-        [MaxLength(5)]
-        public string Coin { get; set; }
-
         public decimal Price { get; set; }
 
         public DateTime DateRegistered { get; set; }

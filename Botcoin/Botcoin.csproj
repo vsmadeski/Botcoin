@@ -180,6 +180,10 @@
     <Compile Include="Migrations\201907090050086_UpdatePriceRecordPrecision.Designer.cs">
       <DependentUpon>201907090050086_UpdatePriceRecordPrecision.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907090100063_RemovePriceRecordsFromDatabase.cs" />
+    <Compile Include="Migrations\201907090100063_RemovePriceRecordsFromDatabase.Designer.cs">
+      <DependentUpon>201907090100063_RemovePriceRecordsFromDatabase.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ApplicationDbContext.cs" />
     <Compile Include="Models\Balance.cs" />
@@ -278,6 +282,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907090050086_UpdatePriceRecordPrecision.resx">
       <DependentUpon>201907090050086_UpdatePriceRecordPrecision.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907090100063_RemovePriceRecordsFromDatabase.resx">
+      <DependentUpon>201907090100063_RemovePriceRecordsFromDatabase.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
