@@ -32,9 +32,13 @@ namespace Botcoin.Models
             modelBuilder.Entity<SellOrderModel>()
                         .Property(p => p.Price)
                         .HasPrecision(18, 10);
+            modelBuilder.Entity<PriceRecordXrp>()
+                        .Property(p => p.Price)
+                        .HasPrecision(18, 10);
         }
 
         public DbSet<BuyOrderModel> BuyOrders { get; set; }
         public DbSet<SellOrderModel> SellOrders { get; set; }
+        public DbSet<PriceRecordXrp> PriceRecordsXrp { get; set; }
     }
 }

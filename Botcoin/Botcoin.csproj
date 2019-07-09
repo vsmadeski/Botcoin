@@ -184,6 +184,10 @@
     <Compile Include="Migrations\201907090100063_RemovePriceRecordsFromDatabase.Designer.cs">
       <DependentUpon>201907090100063_RemovePriceRecordsFromDatabase.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907090107216_AddPriceRecordXrpToDatabase.cs" />
+    <Compile Include="Migrations\201907090107216_AddPriceRecordXrpToDatabase.Designer.cs">
+      <DependentUpon>201907090107216_AddPriceRecordXrpToDatabase.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ApplicationDbContext.cs" />
     <Compile Include="Models\Balance.cs" />
@@ -192,6 +196,7 @@
     <Compile Include="Models\BuyOrderModel.cs" />
     <Compile Include="Models\OrderModel.cs" />
     <Compile Include="Models\CsvImportModel.cs" />
+    <Compile Include="Models\PriceRecordXrp.cs" />
     <Compile Include="Models\PriceRecord.cs" />
     <Compile Include="Models\Prices.cs" />
     <Compile Include="Models\Responses\GetAccountInfoResponse.cs" />
@@ -285,6 +290,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907090100063_RemovePriceRecordsFromDatabase.resx">
       <DependentUpon>201907090100063_RemovePriceRecordsFromDatabase.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907090107216_AddPriceRecordXrpToDatabase.resx">
+      <DependentUpon>201907090107216_AddPriceRecordXrpToDatabase.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
