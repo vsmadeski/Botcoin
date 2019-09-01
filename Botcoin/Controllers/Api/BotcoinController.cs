@@ -174,17 +174,17 @@ namespace Botcoin.Controllers.Api
 
         private decimal CalculateBuyPrice()
         {
-            return Botcoin.Prices.BuyPrice.Value - 0.015M;
+            return Botcoin.Prices.BuyPrice.Value - 0.01M;
         }
 
         private decimal CalculateSellPrice(decimal lastBuyPrice)
         {
             decimal calculated = Botcoin.Prices.BuyPrice.Value;
 
-            if (calculated >= (lastBuyPrice * 1.015M))
+            if (calculated >= (lastBuyPrice * 1.008M))
                 return calculated + 0.0001M;
 
-            return (lastBuyPrice * 1.015M) + 0.0001M;
+            return (lastBuyPrice * 1.008M) + 0.0001M;
         }
 
         private async Task RegisterBuyOrderAsync(decimal amount, string coin, decimal price)
@@ -513,6 +513,14 @@ namespace Botcoin.Controllers.Api
                 var jsonData = JsonConvert.DeserializeObject<ListOrdersResponse>(result);
 
                 return jsonData;
+            }
+        }
+
+        private async Task RegisterPriceAsync()
+        {
+            if(Botcoin.SelectedCoin == "XRP")
+            {
+
             }
         }
 
